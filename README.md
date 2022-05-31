@@ -5,15 +5,15 @@ Um tabuleiro de 3 linhas por 3 colunas que, partindo de qualquer estado inicial 
 
 # Initial State
 ````
-    1 2 3
-    8   4
-    7 5 6
+    1 3 2
+    8   6
+    7 5 4
 ````
 # Goal
 ````
-    1 2 3
-    4 5 6
-    7 8 
+    1 2 3      1 2 3        1 2  
+    4 5 6  or  8   4  or  3 4 5
+    7 8        7 6 5      6 7 8
 ````
 
 ## Requirement

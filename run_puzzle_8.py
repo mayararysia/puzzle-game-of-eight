@@ -6,6 +6,7 @@ import os
 from search import Search
 from puzzle import Puzzle
 
+
 # Two-dimensional lists (arrays) / matrices
 matrix_puzzle = [
     [None, None, None],
@@ -14,21 +15,24 @@ matrix_puzzle = [
 ]
 
 goal_matrix_puzzle = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, ' ']
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8]
 ]
 
 BLANK_SPACE_CODE = 0
 BLANK_SPACE = ' '
 
 # Limpa tela no sistema operacional linux ou windows
+
+
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def header_message():
     print("\t\tBEM VINDO AO JOGO DOS OITO! / WELCOME TO PUZZLE EIGHT!\n")
+
 
 def header_game_message():
     print("\t\t<< GAME PUZZLE EIGHT >>\n")
@@ -50,6 +54,10 @@ def print_model_matrix(isSleepEffect):
         ['[-]', '[-]', '[-]']
     ]
     iterates_matrix(MATRIX, isSleepEffect)
+    print()
+    print('Goal State')
+    print()
+    iterates_matrix(goal_matrix_puzzle, isSleepEffect)
     print()
 
 
@@ -88,8 +96,8 @@ def initial_design():
                 number = int(
                     input('Enter the number of position [{}][{}]: '.format(row, column)))
 
-                if number == BLANK_SPACE_CODE and not isElementIntoMatrixPuzzle(BLANK_SPACE):
-                    matrix_puzzle[row][column] = BLANK_SPACE
+                if number == BLANK_SPACE_CODE and not isElementIntoMatrixPuzzle(BLANK_SPACE_CODE):
+                    matrix_puzzle[row][column] = BLANK_SPACE_CODE
                     stop = True
                 elif (number <= 8 and number >= 1) and not isElementIntoMatrixPuzzle(number):
                     matrix_puzzle[row][column] = number
@@ -110,47 +118,52 @@ def play_it():
     stop = False
     search = Search.BREADTH_FIRST
     dictionary = Search.getDictionary()
+
+    while not stop:
+        sleep(0.5)
+        clear()
+        header_game_message()
+
+        iterates_matrix(matrix_puzzle, False)
+        print()
+
+        print('\nChoose a search algorithm: ')
+        print()
+        print('{} - {}'.format(Search.BREADTH_FIRST.value,
+              dictionary[Search.BREADTH_FIRST]))
+        # print('{} - Depth-first search (DFS)'.format(Search.DEPTH_FIRST.value))
+        # print('{} - Greedy search'.format(Search.GREEDY.value))
+        # print('{} - A* search'.format(Search.A_START.value))
+        print()
+        try:
+            option = int(input('Option: '))
+
+            if option != None and Search(option) in Search:
+                stop = True
+                search = Search(option)
+
+        except Exception as error:
+            print()
+            print('Error. Try again! {}'.format(error))
+            sleep(2)
+            pass
+    print()
+    print('Nice job!')
+
+    sleep(2)
+    clear()
+    header_game_message()
+
+    puzzle_8 = Puzzle(matrix_puzzle, goal_matrix_puzzle,  search)
     
-    # while not stop:
-    #     sleep(0.5)
-    #     clear()
-    #     header_game_message()
-        
-    #     iterates_matrix(matrix_puzzle, False)
-    #     print()
+    #puzzle_8 = Puzzle([[1,2,5], [3,4,0], [6, 7, 8]], goal_matrix_puzzle,  search)
     
-    #     print('\nChoose a search algorithm: ')
-    #     print()
-    #     print('{} - {}'.format(Search.BREADTH_FIRST.value, dictionary[Search.BREADTH_FIRST]))
-    #     # print('{} - Depth-first search (DFS)'.format(Search.DEPTH_FIRST.value))
-    #     # print('{} - Greedy search'.format(Search.GREEDY.value))
-    #     # print('{} - A* search'.format(Search.A_START.value))
-    #     print()
-    #     try:
-    #         option = int(input('Option: '))
-            
-    #         if option != None and Search(option) in Search:
-    #             stop = True
-    #             search = Search(option)
-                
-    #     except Exception as error:
-    #         print()
-    #         print('Error. Try again! {}'.format(error))
-    #         sleep(2)
-    #         pass
-    # print()
-    # print('Nice job!')
-    
-    # sleep(2)
-    # clear()
-    # header_game_message()
-    
-    # puzzle_8 = Puzzle(matrix_puzzle, goal_matrix_puzzle,  search)
-    puzzle_8 = Puzzle([[1,3,2], [4,5,6], [BLANK_SPACE, 7, 8]], goal_matrix_puzzle,  search)
-    puzzle_8.start_search();
-    
+    #puzzle_8 = Puzzle([[1,0,2], [3,4,5], [6, 7, 8]], goal_matrix_puzzle,  search)
+    puzzle_8.start_search()
+
+
 if __name__ == '__main__':
-    clear();
-    # initial_design()
-    # sleep(1)
+    clear()
+    initial_design()
+    sleep(1)
     play_it()

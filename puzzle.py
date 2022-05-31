@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+from operator import contains
 from search import Search
 from node import Node
 import os
+from time import sleep
 
 BLANK_SPACE = ' '
+
 
 class Puzzle:
     def __init__(self, matrix, goal_matrix, search):  # constructor
@@ -13,36 +16,36 @@ class Puzzle:
         self._dictionary = Search.getDictionary()
         self._initialState = self.__getInitialStateOfMatrix()
         self._goalState = self.__getGoalState()
-    
+
     def __getInitialStateOfMatrix(self):
         initialState = []
         for row in range(len(self._matrix)):
             for column in range(len(self._matrix[row])):
                 initialState.append(self._matrix[row][column])
         return initialState
-    
+
     def __getGoalState(self):
         goal = []
         for row in range(len(self._goal_matrix)):
             for column in range(len(self._goal_matrix[row])):
                 goal.append(self._goal_matrix[row][column])
         return goal
-    
+
     def __setGoalState(self, newGoal):
         self._goalState = newGoal
-    
+
     def __setInitialState(self, state):
-         self._initialState = state
+        self._initialState = state
 
     def __clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def iterates_matrix(self):
         self.__iterates_array(self._matrix)
-    
+
     def iterates_goal_matrix(self):
         self.__iterates_array(self._goal_matrix)
-    
+
     def __iterates_array(self, array):
         for row in range(len(array)):
             for column in range(len(array[row])):
@@ -57,100 +60,59 @@ class Puzzle:
 
     def isSearchEmpty(self):
         return self._search == None
-    
-    def __isFrontierEmpty(self, list):
-        return list == None or len(list) == 0
 
-    # def BFS(self, initialState, goalTest):
-    #     success = True
-    #     failure = False
-            
-    #     frontier = initialState
-    #     explored = []
-        
-    #     while not self.__isFrontierEmpty(frontier) :
-    #         state = frontier.pop(0)
-    #         explored.append(state)
-                
-    #         if goalTest(state):
-    #             return success
-                
-    #         for neighbor in state.neighbors():
-    #             if neighbor not in frontier U explored:
-    #                 frontier.enqueue(neighbor)
-            
-    #         return failure
-    def BFS(self, initialState, goalTest):
-        success = True
-        failure = False
-        
-        UP = 1
-        DOWN = 2
-        LEFT = 3
-        RIGHT = 4
-        
+    def __isFrontierEmpty(self, frontier):
+        return frontier == None or len(frontier) == 0
+
+    def BFS(self, root):
+        goal = False
+        path_solution = []
         frontier = []
         explored = []
-        neighbors = []
-        
-        index_blank_space = initialState.index(BLANK_SPACE)
-        
-        print('initialState: ', initialState);
-        
-        for row in initialState:
-            node = Node(row, 0)
-            frontier.append(node)
-        
-        print('index_blank_space: ', index_blank_space)
-        list = frontier
-        
-        while not self.__isFrontierEmpty(frontier) :
-            
-            state = frontier.pop(index_blank_space)
-            # state.cost =
+
+        frontier.append(root)
+
+        while not self.__isFrontierEmpty(frontier) and not goal:
+            state = frontier[0]
             explored.append(state)
-            
-            index_left = None
-            index_right = None
-            index_up = None
-            index_down = None
-            cost_of_path: 3
-            
-            left = index_blank_space-1
-            right = index_blank_space+1
-            
-            if left > -1 and (left <= 8 and left >= 0):
-                index_left = left
-            
-            if right > -1 and (right <= 8 and right >= 0):
-                index_right = right
-                            
-            up = index_blank_space-cost_of_path
-            down = index_blank_space+cost_of_path
-            
-            if up > -1 and (up <= 8 and up >= 0):
-                index_up = up
-            
-            if down > -1 and (down <= 8 and down >= 0):
-                index_up = up
-                
-            if index_left != None:
-                neighbors.append(list[index_left])
-            if index_right != None:
-                neighbors.append(list[index_right])
-            if index_up != None:
-                neighbors.append(list[index_up])
-            if index_down != None:
-                neighbors.append(list[index_down])
-            
-            if goalTest(state):
-                return success
-                
-            for neighbor in state.neighbors():
-                if neighbor not in frontier U explored:
-                    frontier.enqueue(neighbor)
-            
-            return failure
+
+            state.goExpandNode()
+            print()
+            print('The Puzzle: ')
+            state.printPuzzle()
+            sleep(1)
+            children = state.getChildren()
+
+            for index in range(len(children)):
+                child = children[index]
+
+                if child.goalTest() == True:
+                    print()
+                    print('Goal found')
+                    goal = True
+
+                    self.path_trace(path_solution, child)
+
+                if (not self.contains(frontier, child)) and (not self.contains(explored, child)):
+                    frontier.append(child)
+        return path_solution
+
+    def path_trace(self, pathList, node):
+        print('Tracing path...')
+
+        currentNode = node
+        pathList.append(currentNode)
+        while currentNode.getParent() is not None:
+            currentNode = currentNode.getParent()
+            pathList.append(currentNode)
+
+    def contains(self, nodeList, node):
+        success = False
+
+        for index in range(len(nodeList)):
+            if nodeList[index].isEqualPuzzle(node.getPuzzle()):
+                success = True
+        return success
 
     def start_search(self):
 
@@ -168,29 +130,24 @@ class Puzzle:
         print()
         print('<< {} >>'.format(self._dictionary[self._search]))
         print()
-        print()
-        print('Move the blank space up, left, right or down.')
-        print()
         print('Control strategy: up, left, right or down')
         print('\n\n')
-        
-        self.BFS(self._initialState, self._goalState)
-        
-        # function BFS(initialState, goalTest)
-        #     return success or failure:
-            
-        #     frontier: Queue.new(initialState)
-        #     explored = Set.now()
-            
-        #     while not frontier.isEmpty():
-            
-        #         state = frontier.dequeue()
-        #         explored.add(state)
-                
-        #         if goalTest(state):
-        #             return Sucess (state)
-                
-        #         for neighbor int state.neighbors():
-        #             if neighbor not in frontier U explored:
-        #                 frontier.enqueue(neighbor)
-        #     return failure
+
+        root = Node(self._initialState)
+        solution = self.BFS(root)
+
+        print()
+        print('Nodes expanded: ', len(solution))
+        print()
+        print('\n\nsolution: ')
+        if len(solution) > 0:
+            for index in range(len(solution)):
+                if len(solution[index].getPuzzle()) > 0:
+                    print()
+                    solution[index].printPuzzle()
+                else:
+                    print()
+                    print('No solution is found')
+        else:
+            print()
+            print('No solution is found')
